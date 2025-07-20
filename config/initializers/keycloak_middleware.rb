@@ -1,6 +1,8 @@
 Rails.application.config.middleware.use KeycloakMiddleware::Middleware do |config|
-  # Configure the protected paths and required roles
-  config.debug = false
+  # Enable debug logging to terminal or Rails.logger
+  config.debug = true
+
+  # Configure the protected paths and required roles  
   config.protect "/secured", role: "user"
   config.protect "/admin", role: "admin"
 

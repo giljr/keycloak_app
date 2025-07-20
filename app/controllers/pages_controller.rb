@@ -1,43 +1,39 @@
 class PagesController < ApplicationController
-  def home
-  end
+  before_action :set_user_info, only: %i[secured admin]
 
   def secured
-    roles = session[:roles] || []
-    unless roles.include?("user")
-      return render plain: "Unauthorized", status: :unauthorized
+    if user_has_role?("user")
+      @logout_jwt = @user_info[:access_token]
+      render "secured"
+    else
+      unauthorized
     end
-
-    @user_info = {
-      user_id: session[:user_id],
-      roles: roles,
-      access_token: session[:access_token],
-      id_token: session[:id_token]
-    }
-
-    render "secured"
   end
 
   def admin
-    roles = session[:roles] || []
-    unless roles.include?("admin")
-      return render plain: "Unauthorized", status: :unauthorized
+    if user_has_role?("admin")
+      @logout_jwt = @user_info[:access_token]
+      render "admin"
+    else
+      unauthorized
     end
-
-    @user_info = {
-      user_id: session[:user_id],
-      roles: roles,
-      access_token: session[:access_token],
-      id_token: session[:id_token]
-    }
-
-    render "admin"
   end
 
-  def logout
-    # This just issues the POST/DELETE to the middleware’s /logout
-    # Optional: clear session here as fallback
-    reset_session
-    redirect_to root_path, notice: "You have been logged out."
+  private
+
+  def set_user_info
+    @user_info = {
+      user_id: session[:user_id],
+      roles: session[:roles] || [],
+      access_token: session[:access_token]
+    }
+  end
+
+  def user_has_role?(role)
+    @user_info[:roles].include?(role)
+  end
+
+  def unauthorized
+    render plain: "Unauthorized", status: :unauthorized
   end
 end

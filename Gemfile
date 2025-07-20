@@ -66,7 +66,7 @@ gem 'dotenv-rails', groups: [:development, :test]
 gem 'jwt'
 gem 'rack-cors'               # for CORS handling, optional but recommended
 gem 'rack-protection'         # if needed for middleware security
-gem 'keycloak_middleware', path: '../keycloak_middleware'
+gem 'keycloak_middleware', git: 'https://github.com/giljr/keycloak_middleware.git'
 
 # gem "redis-rails" # Deprecated, use redis-session-store instead
 

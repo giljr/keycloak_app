@@ -1,0 +1,9 @@
+<h1>Admin Access Granted</h1>
+<p>You are authorized as an <strong>admin</strong>.</p>
+
+<%= button_to "🚪 Log out", logout_path, method: :get, class: "btn btn-danger" %>
+
+<p><a href="/"> 🏠️ Return home </a></p>
+
+<h2>Decoded Token Payload</h2>
+<pre><%= JSON.pretty_generate(@user_info) %></pre>

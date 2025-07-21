@@ -70,7 +70,7 @@
 <body>
   <header>
     <h1>🔐 Welcome to <%= Rails.application.class.module_parent_name %></h1>
-    <p>Secure your API access with <strong>Keycloak</strong> or test it directly using <a href="https://www.postman.com" target="_blank" style="color: #ffeb3b;">Postman</a>.</p>
+    <p>Welcome to Keycloak App Demo!</p>
   </header>
 
   <div class="button-container">
@@ -80,81 +80,12 @@
   <main>
     <section>
       <h2>📫 Prerequisites</h2>
-      <p>To use the API, you can:</p>
+      <p>To use the APP, you can:</p>
       <ul>
-        <li>🔐 <strong>Log in via Keycloak</strong> using the button above</li>
-        <li>🧪 <strong>Test via Postman</strong> with credentials and access tokens below</li>
+        <li>🔐 <strong>Log in via Keycloak</strong> using the button above</li>        
       </ul>
     </section>
-
-    <section>
-      <h2>🧪 Available Endpoints & Tokens</h2>
-
-      <h3>1. Retrieve a Token (Alice - user)</h3>
-      <pre>
-POST http://127.0.0.1:8080/realms/quickstart/protocol/openid-connect/token
-Content-Type: application/x-www-form-urlencoded
-
-client_id=test-cli
-username=alice
-password=123
-grant_type=password
-      </pre>
-
-      <div class="token-step">
-        <p><em>Post-response script for Postman:</em></p>
-        <pre>
-let jsonData = pm.response.json();
-pm.collectionVariables.set("access_token", jsonData.access_token);
-        </pre>
-      </div>
-
-      <h3>2. Call Secured Endpoint</h3>
-      <pre>
-GET http://localhost:3000/secured
-Authorization: Bearer &lt;access_token&gt;
-      </pre>
-
-      <p><strong>Expected response:</strong></p>
-      <pre>
-{
-  "message": "secured"
-}
-      </pre>
-
-      <h3>3. Retrieve Admin Token</h3>
-      <pre>
-POST http://127.0.0.1:8080/realms/quickstart/protocol/openid-connect/token
-Content-Type: application/x-www-form-urlencoded
-
-client_id=test-cli
-username=admin
-password=123
-grant_type=password
-      </pre>
-
-      <div class="token-step">
-        <p><em>Post-response script for Postman:</em></p>
-        <pre>
-let jsonData = pm.response.json();
-pm.collectionVariables.set("admin_access_token", jsonData.access_token);
-        </pre>
-      </div>
-
-      <h3>4. Call Admin Endpoint</h3>
-      <pre>
-GET http://localhost:3000/admin
-Authorization: Bearer &lt;admin_access_token&gt;
-      </pre>
-    </section>
-
-    <section>
-      <h2>🛠 Using cURL</h2>
-      <pre>
-curl -H "Authorization: Bearer &lt;access_token&gt;" http://localhost:3000/secured
-curl -H "Authorization: Bearer &lt;admin_access_token&gt;" http://localhost:3000/admin
-      </pre>
-    </section>
+    
   </main>
 </body>
 </html>

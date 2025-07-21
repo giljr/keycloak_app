@@ -19,6 +19,8 @@ Clone and install dependencies:
 git clone https://github.com/giljr/keycloak-app.git
 cd keycloak-app
 bundle install
+bin/rails generate keycloak_middleware:install # install the gem
+bundle info keycloak_middleware                # confirm the latest version
 ```
 
 🔧 Configuration

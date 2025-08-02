@@ -1,0 +1,31 @@
+require 'redis'
+
+# Configure Redis connection
+redis = Redis.new(
+  host: Rails.application.credentials.dig(:redis, :host) || "localhost",
+  port: Rails.application.credentials.dig(:redis, :port) || 6379,
+  db:   Rails.application.credentials.dig(:redis, :db_session) || 0
+)
+
+
+
+# Paste your session key here (from redis-cli)
+key = "sessions:2::d78a5f6d6c4bde502af6e20fab0c9a2ea7f22bc9875159d1931a012f5fe29054"
+
+# Fetch the raw session value
+raw = redis.get(key)
+
+# Decode and print session content
+if raw
+  begin
+    data = Marshal.load(raw)
+    puts "✅ Session decoded successfully:"
+    puts "-------------------------------"
+    pp data
+  rescue => e
+    puts "❌ Failed to decode session:"
+    puts e.message
+  end
+else
+  puts "⚠️ No session found for key: #{key}"
+end

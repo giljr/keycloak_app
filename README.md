@@ -1,137 +1,135 @@
-## 🔑 Keycloak Demo App
 
-Demo Rails app showcasing authentication & authorization with Keycloak via the keycloak_middleware gem (v0.1.4).
+# Keycloak Middleware Demo - v0.2.0
+### Welcome to this SECOND tutorial!
+
+✅ This time, we use Rails credentials instead of a .env file — following Rails best practices (BCP).
+
+Update: [aug, 25]
+#### Using keycloak_middleware Gem v0.2.0! from [here](https://medium.com/jungletronics/a-rails-gem-from-scratch-41b5cbbd9453)
 
 
-🚀 Features
+
+👉 Start from [here](https://medium.com/jungletronics/keycloak-middleware-demo-a122a5fcf3bf).
+
+Then update the app like these instructions:
+
+You’ll learn:
 ```
-✅ Integrates with Keycloak using OpenID Connect.
-✅ Middleware validates JWT and enforces required roles.
-✅ Protects /secured and /admin endpoints.
-✅ Role-based access control.
-✅ Use Redis for to avoid browser cookie size limits.
+✅ Use Rails BCP
+✅ How the gem works behind the scenes
+✅ How to configure it in your Rails app
+✅ Tips to test and debug your middleware
+✅ Best practices to secure your endpoints with Keycloak
+```
+### 🚀 UPDATE [2025–07–30]: Upgrade to keycloak_middleware v0.2.0
+
+Version v0.2.0 introduces major enhancements, including full support for Rails.application.credentials, removal of the .env dependency, and improved session/logout handling using JWT.
+
+Follow the steps below to upgrade your Rails project:
+---
+#### ✅ 0. Update Your Gemfile
+
+Replace the previous gem version with the latest tag:
+```bash
+gem "keycloak_middleware", git: "https://github.com/giljr/keycloak_middleware. git", tag: "v0.2.0"
 ```
 
-📦 Installation
-Clone and install dependencies:
+Then install the gem:
 
-```
-git clone https://github.com/giljr/keycloak-app.git
-cd keycloak-app
+```bash
 bundle install
-bin/rails generate keycloak_middleware:install # install the gem
-bundle info keycloak_middleware                # confirm the latest version
 ```
+You should see:
+```bash
+Fetching https://github.com/giljr/keycloak_middleware.git
+Fetching gem metadata from https://rubygems.org/.........
+Resolving dependencies...
+Using keycloak_middleware 0.2.0 (was 0.1.7) from https://github.com/giljr/keycloak_middleware.git (at v0.2.0@caf561c)
+Bundle complete! 28 Gemfile dependencies, 130 gems now installed.
+Use `bundle info [gemname]` to see where a bundled gem is installed.
 
-🔧 Configuration
-Set the following environment variables for Keycloak:
-
+3 installed gems you directly depend on are looking for funding.
+  Run `bundle fund` for details
 ```
-touch .env
+---
+#### ✅ 1. Recreate Your Credentials File (Recommended)
+
+If you don’t need the previous encrypted credentials, reset them from scratch:
+```bash
+rm config/credentials.yml.enc config/master.key
+EDITOR=”code — wait” bin/rails credentials:edit
 ```
-```ruby
-KEYCLOAK_REALM=<your_realm_name>
-KEYCLOAK_SITE=<keycloak_server_url>           # e.g., http://localhost:8080
-KEYCLOAK_CLIENT_ID=<your_client_name>
-KEYCLOAK_CLIENT_SECRET=<your_client_secret_key>
-KEYCLOAK_REDIRECT_URI=<redirect_url>           # e.g., http://localhost:3000/auth/callback
+---
+####  ✅ 2. Add Keycloak and Redis Configuration
 
-REDIS_HOST=<your_redis_server_url>             # e.g., localhost
-REDIS_PORT=6379
-REDIS_DB_SESSION=0
+In the editor window that opens, paste the following YAML structure:
+```yml
+keycloak:
+  realm: <your_realm_name>
+  site: https://<your_keycloak_server>
+  client_id: <your_client_id>
+  client_secret: <your_secret>
+  redirect_uri: http://<your_app_url>:<port>/auth/callback
+
+redis:
+  host: <redis_server_url>
+  port: 6379
+  db_session: 0
+
+secret_key_base: <your_secret_key_base>
 ```
-#### 🔎 To grasp how it works, examine these files:
+Replace values as appropriate for your environment
 
-🔧 config/initializers/keycloak_middleware.rb:
+---
 
-```ruby
-Rails.application.config.middleware.use KeycloakMiddleware::Middleware do |config|
-  # Configure the protected paths and required roles
-  config.debug = true
-  config.protect "/secured", role: "user"
-  config.protect "/admin", role: "admin"
+#### ✅ 3. Update
 
-  # Configure the redirection logic on successful login
-  config.on_login_success = proc do |roles|
-    if roles.include?('admin')
-      '/admin'
-    elsif roles.include?('user')
-      '/secured'
-    else
-      '/'
-    end
-  end
-end
-```
+`config/initializers/session_store.rb`
 
-🔧 config/initializers/session_store.rb:
-
+Modify your session store to read Redis credentials from the encrypted file:
 ```ruby
 Rails.application.config.session_store :redis_store,
   servers: [
     {
-      host: ENV.fetch("REDIS_HOST", "localhost"),
-      port: ENV.fetch("REDIS_PORT", 6379),
-      db:   ENV.fetch("REDIS_DB_SESSION", 0),
+      host: Rails.application.credentials.dig(:redis, :host) || "localhost",
+      port: Rails.application.credentials.dig(:redis, :port) || 6379,
+      db:   Rails.application.credentials.dig(:redis, :db_session) || 0,
       namespace: "sessions"
     }
   ],
   key: "_keycloak_app_session",
   expire_after: 90.minutes
 ```
+After following these steps, your app should function as before — now with improved security and maintainability.
 
-#### 🛣️ Routes
+---
 
-🔧 config/routes.rb
-```ruby
-Rails.application.routes.draw do
-  root "pages#index"
+#### ✅ 4. Configure the logout redirect URI in the Keycloak dashboard
 
-  get   "public",          to: "pages#public"
-  get   "/login",          to: redirect("/") # Middleware handles /login
-  match "/logout",         to: "pages#logout", via: [:post, :delete]
-  get   "/auth/callback",  to: redirect("/") # Middleware handles /auth/callback
+In your client settings, add the following to Valid Redirect URIs:
 
-  get   "/secured",        to: "pages#secured"
-  get   "/admin",          to: "pages#admin"
-end
-```
+http://localhost:8080/logout
 
-🔧 Method Path Description
+Click Save to apply the changes.
 
-```
-GET	/public	    Public page
-GET	/secured	  Requires token - user role
-GET	/admin	    Requires token - admin role
-```
+You're all set! 👌
+#### 💡 If anything breaks, blame the upgrade… or just ping the maintainer 😉
 
-🧪 Run
-Start the server:
+---
 
-```
-bin/dev
-```
+## Tutorials - Get Started!
 
-Or simply:
+[**A Rails Gem From Scratch**](https://medium.com/jungletronics/a-rails-gem-from-scratch-41b5cbbd9453) - 
+Building a Keycloak Middleware Gem for Rails 8+
 
-```
-rails server
-```
+[**Keycloak Middleware Demo In Rails 8**](https://medium.com/jungletronics/keycloak-middleware-demo-a122a5fcf3bf) - Using keycloak_middleware Gem
 
-Visit: http://localhost:3000
+Gem: **[keycloak:middleware](https://github.com/giljr/keycloak_middleware)**
 
-You’ll be redirected to the Keycloak login page. After entering your credentials, you’ll land on either the /secured or /admin endpoints. 
 
-Voilà!
 
-#### 🔗 Middleware
+    
+## Support
 
-This app uses the [Keycloak::Middleware](https://github.com/giljr/keycloak_middleware) to intercept requests and validate JWT tokens for `/secured` and `/admin`.
-
-You can customize required roles in `config/initializers/keycloak_middleware.rb`.
-
-You can turn on debug mode to see the [OAuth 2.0](https://medium.com/jungletronics/demystifying-oauth-2-0-flow-unleashed-b6d1e652bbd5) artifacts printed in the terminal.
-
-📄 License
-
-MIT
+- +rails 8.0.2
+- +ruby-3.4.4

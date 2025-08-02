@@ -1,7 +1,9 @@
-PATH
-  remote: ../keycloak_middleware
+GIT
+  remote: https://github.com/giljr/keycloak_middleware.git
+  revision: caf561c476a232dc446ee7485d78fc9bbd49ff67
+  tag: v0.2.0
   specs:
-    keycloak_middleware (0.1.7)
+    keycloak_middleware (0.2.0)
       jwt
 
 GEM
